@@ -1,0 +1,45 @@
+name: CI Pipeline (Go & Docker)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test-go:
+    name: Build & Test Go App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Verify Code Builds
+        run: go build ./...
+
+      # - name: Run Tests
+      #   run: go test ./... -v
+
+  build-docker-image:
+    name: Build Docker Image
+    needs: build-and-test-go
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t hello-devops-app:test .
