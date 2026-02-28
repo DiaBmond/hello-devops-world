@@ -2,11 +2,9 @@ name: CI Pipeline (Go & Docker)
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-test-go:
@@ -33,13 +31,32 @@ jobs:
       #   run: go test ./... -v
 
   build-docker-image:
-    name: Build Docker Image
+    name: Build and Push Docker Image
     needs: build-and-test-go
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
-        run: docker build -t hello-devops-app:test .
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/diabmond/hello-devops-app:latest
+            ghcr.io/diabmond/hello-devops-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
