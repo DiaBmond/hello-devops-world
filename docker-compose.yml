@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  goservice:
+    build: .
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - public
+      - private
+
+    environment:
+      DB_DSN: ${DB_DSN}
+
+    depends_on:
+      database:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  database:
+    image: postgres:15-alpine
+    restart: unless-stopped
+
+    networks:
+      - private
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  public:
+    driver: bridge
+  private:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
