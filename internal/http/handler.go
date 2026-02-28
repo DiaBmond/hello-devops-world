@@ -10,6 +10,8 @@ import (
 	"go-prod-app/internal/domain"
 	"go-prod-app/internal/repository"
 	"go-prod-app/internal/service"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -116,6 +118,11 @@ func (h *Handler) users(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) userByID(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Path[len("/users/"):]
+
+	if _, err := uuid.Parse(id); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid id format")
+		return
+	}
 
 	switch r.Method {
 
