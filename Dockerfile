@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build static binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server ./cmd/app
+RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/app
 
 # ==========================================
 # Stage 2: Production
