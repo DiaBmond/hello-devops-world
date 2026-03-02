@@ -25,7 +25,7 @@ variable "region" {
 
 variable "my_ip" {
   description = "Your public IP for SSH access"
-  type        = string
+  type        = list(string)
 }
 
 variable "instance_type" {
@@ -60,10 +60,13 @@ resource "aws_security_group" "web_sg" {
 
   # SSH restricted to your IP
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${var.my_ip}/32"]
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+    # cidr_blocks = ["${var.my_ip}/32"]
+    cidr_blocks = [
+      for ip in var.my_ip : "${ip}/32"
+    ]
   }
 
   # Public HTTP
