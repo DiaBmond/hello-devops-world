@@ -4,6 +4,12 @@
 terraform {
   required_version = ">= 1.5.0"
 
+  backend "s3" {
+    bucket = "hello-devops-tfstate-mon-998877"
+    key    = "prod/terraform.tfstate"
+    region = "ap-southeast-1"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
